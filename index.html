@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed QR Scanner</title>
+    <title>Perfectly Positioned QR Scanner</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         * {
@@ -59,28 +59,28 @@
         
         .scanner-section {
             position: fixed;
-            top: -100%;
-            left: 50%;
-            transform: translateX(-50%);
+            top: -100vh; /* Start above the viewport */
+            left: 0;
             width: 100%;
-            max-width: 500px;
-            border-radius: 0 0 16px 16px;
+            height: auto;
             overflow: hidden;
             background-color: #000;
             z-index: 1000;
             transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
         }
         
         .scanner-section.active {
-            top: 0;
+            top: 0; /* Land perfectly at the top */
         }
         
         .scanner-container {
             position: relative;
             width: 100%;
+            max-width: 500px;
             aspect-ratio: 1/1;
-            margin: 0 auto;
         }
         
         #video {
@@ -313,8 +313,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Fixed QR Scanner</h1>
-            <p class="subtitle">Enhanced button management with smooth UI</p>
+            <h1>Perfect QR Scanner</h1>
+            <p class="subtitle">Flawless positioning with smooth animation</p>
         </div>
         
         <div class="library-info">
