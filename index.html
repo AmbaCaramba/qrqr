@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: #2563eb;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1/1;
+            max-width: 500px;
+            margin: 0 auto 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background-color: #000;
+            border: 1px solid #e2e8f0;
+        }
+        
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+        }
+        
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 3px solid #2563eb;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { border-color: #2563eb; }
+            50% { border-color: #3b82f6; }
+            100% { border-color: #2563eb; }
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.15);
+        }
+        
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .btn.secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .results {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .results h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #2563eb;
+        }
+        
+        #result-content {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            min-height: 100px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            word-break: break-all;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            color: #16a34a;
+        }
+        
+        .status.error {
+            color: #dc2626;
+        }
+        
+        .instructions {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .instructions h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2563eb;
+        }
+        
+        .instructions ul {
+            padding-left: 25px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+            color: #475569;
+        }
+        
+        .browser-support {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .scanner-container {
+                max-width: 100%;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>QR Code Scanner</h1>
+            <p class="subtitle">Scan QR codes directly in your browser</p>
+        </header>
+        
+        <div class="scanner-container">
+            <video id="video" playsinline></video>
+            <div class="scanner-overlay">
+                <div class="scanner-frame"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn" class="btn">Start Scanner</button>
+            <button id="stop-btn" class="btn secondary" disabled>Stop Scanner</button>
+            <button id="scan-again-btn" class="btn secondary" style="display: none;">Scan Again</button>
+        </div>
+        
+        <div class="results">
+            <h2>Scan Results</h2>
+            <div id="result-content">No QR code scanned yet</div>
+        </div>
+        
+        <div class="status" id="status">Ready to scan. Click "Start Scanner" to begin.</div>
+        
+        <div class="instructions">
+            <h3>How to Use</h3>
+            <ul>
+                <li>Click "Start Scanner" to activate your camera</li>
+                <li>Point your camera at a QR code</li>
+                <li>The scanner will automatically stop after detecting a QR code</li>
+                <li>Scan results will appear in the results box</li>
+                <li>Use "Scan Again" to scan another QR code</li>
+            </ul>
+        </div>
+        
+        <div class="browser-support">
+            <p>Note: Requires a browser that supports the BarcodeDetector API (Chrome/Edge/Android browsers)</p>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const scanAgainBtn = document.getElementById('scan-again-btn');
+        const resultContent = document.getElementById('result-content');
+        const statusEl = document.getElementById('status');
+        
+        // Check for BarcodeDetector support
+        let detector;
+        if (!('BarcodeDetector' in window)) {
+            statusEl.textContent = 'BarcodeDetector API not supported in this browser. Try Chrome for Android.';
+            statusEl.classList.add('error');
+            startBtn.disabled = true;
+        } else {
+            // Create barcode detector
+            detector = new BarcodeDetector({ formats: ['qr_code'] });
+        }
+        
+        // Scanner state
+        let scannerActive = false;
+        let detectionInterval;
+        let stream;
+        
+        // Function to start the camera and scanner
+        async function startScanner() {
+            try {
+                // Request camera access
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment', 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                // Show video stream
+                video.srcObject = stream;
+                video.style.display = 'block';
+                await video.play();
+                
+                // Update UI
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                scanAgainBtn.style.display = 'none';
+                statusEl.textContent = 'Scanning for QR codes...';
+                statusEl.classList.remove('success', 'error');
+                resultContent.textContent = 'No QR code scanned yet';
+                scannerActive = true;
+                
+                // Start detection loop
+                detectionInterval = setInterval(detectQRCode, 500);
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                statusEl.textContent = 'Error accessing camera: ' + error.message;
+                statusEl.classList.add('error');
+            }
+        }
+        
+        // Function to detect QR codes
+        async function detectQRCode() {
+            if (!scannerActive) return;
+            
+            try {
+                const codes = await detector.detect(video);
+                if (codes.length > 0) {
+                    // Get the first detected QR code
+                    const qrValue = codes[0].rawValue;
+                    
+                    // Display result
+                    resultContent.textContent = qrValue;
+                    resultContent.style.borderColor = '#bbf7d0';
+                    
+                    // Update status
+                    statusEl.textContent = 'QR code detected!';
+                    statusEl.classList.add('success');
+                    
+                    // Stop scanning after successful detection
+                    stopScanner();
+                    
+                    // Show the Scan Again button
+                    scanAgainBtn.style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Barcode detection failed:', error);
+                statusEl.textContent = 'Detection error: ' + error.message;
+                statusEl.classList.add('error');
+            }
+        }
+        
+        // Function to stop the scanner
+        function stopScanner() {
+            scannerActive = false;
+            clearInterval(detectionInterval);
+            
+            // Stop video stream
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.style.display = 'none';
+                stream = null;
+            }
+            
+            // Update UI
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+        
+        // Function to reset and scan again
+        function resetScanner() {
+            resultContent.textContent = 'No QR code scanned yet';
+            resultContent.style.borderColor = '#e2e8f0';
+            statusEl.textContent = 'Ready to scan. Click "Start Scanner" to begin.';
+            statusEl.classList.remove('success', 'error');
+            scanAgainBtn.style.display = 'none';
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startScanner);
+        stopBtn.addEventListener('click', stopScanner);
+        scanAgainBtn.addEventListener('click', resetScanner);
+        
+        // Clean up when page is closed
+        window.addEventListener('beforeunload', () => {
+            if (scannerActive) {
+                stopScanner();
+            }
+        });
+    </script>
+</body>
+</html>
