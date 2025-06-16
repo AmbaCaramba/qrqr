@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
+    <title>Enhanced QR Code Scanner</title>
     <style>
         * {
             margin: 0;
@@ -13,13 +13,14 @@
         }
         
         body {
-            background: #f5f7fa;
+            background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
             color: #333;
             min-height: 100vh;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
         
         .container {
@@ -28,25 +29,42 @@
             background: white;
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
             margin-top: 20px;
+            position: relative;
+            overflow: hidden;
         }
         
-        header {
+        .header {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         h1 {
-            font-size: 2.2rem;
-            margin-bottom: 12px;
+            font-size: 2.4rem;
+            margin-bottom: 8px;
             color: #2563eb;
+            background: linear-gradient(45deg, #2563eb, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .subtitle {
             font-size: 1.1rem;
             color: #64748b;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .scanner-section {
+            position: relative;
+            margin: 0 auto 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #000;
+            border: 1px solid #e2e8f0;
+            display: none; /* Initially hidden */
         }
         
         .scanner-container {
@@ -54,19 +72,13 @@
             width: 100%;
             aspect-ratio: 1/1;
             max-width: 500px;
-            margin: 0 auto 30px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            background-color: #000;
-            border: 1px solid #e2e8f0;
+            margin: 0 auto;
         }
         
         #video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: none;
         }
         
         .scanner-overlay {
@@ -75,8 +87,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.05);
+            background: rgba(0, 0, 0, 0.4);
             pointer-events: none;
+            display: none; /* Initially hidden */
         }
         
         .scanner-frame {
@@ -86,16 +99,16 @@
             transform: translate(-50%, -50%);
             width: 70%;
             height: 70%;
-            border: 3px solid #2563eb;
-            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
+            border: 3px solid #00ff9d;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
             border-radius: 10px;
             animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
-            0% { border-color: #2563eb; }
-            50% { border-color: #3b82f6; }
-            100% { border-color: #2563eb; }
+            0% { border-color: #00ff9d; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 157, 0.5); }
+            50% { border-color: #00e68a; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 255, 157, 0.8); }
+            100% { border-color: #00ff9d; box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 157, 0.5); }
         }
         
         .controls {
@@ -103,12 +116,12 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 30px;
+            margin: 25px 0;
         }
         
         .btn {
             padding: 14px 28px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             border: none;
             border-radius: 10px;
@@ -117,11 +130,13 @@
             color: white;
             transition: all 0.2s ease;
             box-shadow: 0 4px 6px rgba(37, 99, 235, 0.15);
+            min-width: 180px;
         }
         
         .btn:hover {
             background: #1d4ed8;
             transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(37, 99, 235, 0.25);
         }
         
         .btn:active {
@@ -132,64 +147,89 @@
             background: #94a3b8;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         
         .btn.secondary {
             background: #f1f5f9;
             color: #334155;
             border: 1px solid #cbd5e1;
+            display: none; /* Hidden by default */
         }
         
         .btn.secondary:hover {
             background: #e2e8f0;
         }
         
+        .btn.success {
+            background: #10b981;
+            display: none; /* Hidden by default */
+        }
+        
+        .btn.success:hover {
+            background: #059669;
+        }
+        
         .results {
-            background-color: #f8fafc;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
             border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #e2e8f0;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid #bae6fd;
+            text-align: center;
         }
         
         .results h2 {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-            color: #2563eb;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #0c4a6e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .results h2 i {
+            font-size: 1.8rem;
+            color: #0891b2;
         }
         
         #result-content {
-            font-size: 1.1rem;
-            line-height: 1.5;
+            font-size: 1.3rem;
+            line-height: 1.6;
             min-height: 100px;
-            padding: 15px;
+            padding: 20px;
             background-color: white;
-            border-radius: 8px;
+            border-radius: 10px;
             word-break: break-all;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 15px;
+            border: 1px solid #bae6fd;
+            margin-bottom: 10px;
             white-space: pre-wrap;
+            font-weight: 500;
+            color: #0c4a6e;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .status {
             text-align: center;
             padding: 15px;
-            margin-top: 15px;
+            margin: 15px 0;
             font-size: 1.1rem;
             color: #475569;
             font-weight: 500;
+            min-height: 30px;
         }
         
         .status.success {
-            color: #16a34a;
+            color: #10b981;
         }
         
         .status.error {
-            color: #dc2626;
+            color: #ef4444;
         }
         
         .instructions {
-            background-color: #f8fafc;
+            background: #f8fafc;
             border-radius: 12px;
             padding: 20px;
             margin-top: 30px;
@@ -200,6 +240,9 @@
             font-size: 1.3rem;
             margin-bottom: 15px;
             color: #2563eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .instructions ul {
@@ -217,6 +260,9 @@
             text-align: center;
             font-size: 0.9rem;
             color: #64748b;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
         }
         
         @media (max-width: 600px) {
@@ -225,7 +271,7 @@
             }
             
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.9rem;
             }
             
             .scanner-container {
@@ -233,47 +279,65 @@
             }
             
             .btn {
-                padding: 12px 24px;
+                padding: 12px 20px;
                 width: 100%;
+                font-size: 1rem;
             }
+            
+            #result-content {
+                font-size: 1.1rem;
+                padding: 15px;
+            }
+        }
+        
+        .scan-icon {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.2);
+            text-align: center;
+            margin: 30px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>QR Code Scanner</h1>
+        <div class="header">
+            <h1>Enhanced QR Scanner</h1>
             <p class="subtitle">Scan QR codes directly in your browser</p>
-        </header>
+        </div>
         
-        <div class="scanner-container">
-            <video id="video" playsinline></video>
-            <div class="scanner-overlay">
-                <div class="scanner-frame"></div>
+        <div class="results">
+            <h2><i>📋</i> Scan Results</h2>
+            <div id="result-content">No QR code scanned yet</div>
+            <p class="status" id="status">Ready to scan. Click "Start Scanner" to begin.</p>
+        </div>
+        
+        <div class="scan-icon" id="scan-icon">
+            <div>📷</div>
+        </div>
+        
+        <div class="scanner-section" id="scanner-section">
+            <div class="scanner-container">
+                <video id="video" playsinline></video>
+                <div class="scanner-overlay" id="scanner-overlay">
+                    <div class="scanner-frame"></div>
+                </div>
             </div>
         </div>
         
         <div class="controls">
             <button id="start-btn" class="btn">Start Scanner</button>
-            <button id="stop-btn" class="btn secondary" disabled>Stop Scanner</button>
-            <button id="scan-again-btn" class="btn secondary" style="display: none;">Scan Again</button>
+            <button id="stop-btn" class="btn secondary">Stop Scanner</button>
+            <button id="scan-again-btn" class="btn success">Scan Another Code</button>
         </div>
-        
-        <div class="results">
-            <h2>Scan Results</h2>
-            <div id="result-content">No QR code scanned yet</div>
-        </div>
-        
-        <div class="status" id="status">Ready to scan. Click "Start Scanner" to begin.</div>
         
         <div class="instructions">
-            <h3>How to Use</h3>
+            <h3><i>ℹ️</i> How to Use</h3>
             <ul>
-                <li>Click "Start Scanner" to activate your camera</li>
-                <li>Point your camera at a QR code</li>
-                <li>The scanner will automatically stop after detecting a QR code</li>
-                <li>Scan results will appear in the results box</li>
-                <li>Use "Scan Again" to scan another QR code</li>
+                <li>Click "Start Scanner" to activate your camera and show the scanner</li>
+                <li>Point your camera at a QR code - the scanner will automatically detect it</li>
+                <li>The scanner will stop automatically after successful detection</li>
+                <li>Scan results appear prominently at the top of the page</li>
+                <li>Use "Scan Another Code" to scan again without reloading</li>
             </ul>
         </div>
         
@@ -290,6 +354,9 @@
         const scanAgainBtn = document.getElementById('scan-again-btn');
         const resultContent = document.getElementById('result-content');
         const statusEl = document.getElementById('status');
+        const scannerSection = document.getElementById('scanner-section');
+        const scannerOverlay = document.getElementById('scanner-overlay');
+        const scanIcon = document.getElementById('scan-icon');
         
         // Check for BarcodeDetector support
         let detector;
@@ -319,18 +386,19 @@
                     } 
                 });
                 
-                // Show video stream
+                // Show video stream and scanner UI
                 video.srcObject = stream;
-                video.style.display = 'block';
+                scannerSection.style.display = 'block';
+                scannerOverlay.style.display = 'block';
+                scanIcon.style.display = 'none';
                 await video.play();
                 
                 // Update UI
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
                 scanAgainBtn.style.display = 'none';
                 statusEl.textContent = 'Scanning for QR codes...';
                 statusEl.classList.remove('success', 'error');
-                resultContent.textContent = 'No QR code scanned yet';
                 scannerActive = true;
                 
                 // Start detection loop
@@ -354,10 +422,11 @@
                     
                     // Display result
                     resultContent.textContent = qrValue;
-                    resultContent.style.borderColor = '#bbf7d0';
+                    resultContent.style.borderColor = '#86efac';
+                    resultContent.style.backgroundColor = '#f0fdf4';
                     
                     // Update status
-                    statusEl.textContent = 'QR code detected!';
+                    statusEl.textContent = 'QR code detected successfully!';
                     statusEl.classList.add('success');
                     
                     // Stop scanning after successful detection
@@ -365,6 +434,11 @@
                     
                     // Show the Scan Again button
                     scanAgainBtn.style.display = 'inline-block';
+                    stopBtn.style.display = 'none';
+                    
+                    // Hide scanner overlay
+                    scannerSection.style.display = 'none';
+                    scanIcon.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Barcode detection failed:', error);
@@ -382,22 +456,26 @@
             if (stream) {
                 const tracks = stream.getTracks();
                 tracks.forEach(track => track.stop());
-                video.style.display = 'none';
                 stream = null;
             }
             
             // Update UI
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            scannerSection.style.display = 'none';
+            scanIcon.style.display = 'block';
         }
         
         // Function to reset and scan again
         function resetScanner() {
             resultContent.textContent = 'No QR code scanned yet';
             resultContent.style.borderColor = '#e2e8f0';
+            resultContent.style.backgroundColor = 'white';
             statusEl.textContent = 'Ready to scan. Click "Start Scanner" to begin.';
             statusEl.classList.remove('success', 'error');
             scanAgainBtn.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
         }
         
         // Event listeners
