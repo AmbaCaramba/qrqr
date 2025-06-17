@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floating Action QR Scanner</title>
+    <title>Perfect Floating QR Scanner</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -23,6 +23,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow-x: hidden;
         }
         
         .container {
@@ -34,6 +35,7 @@
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
+            margin-top: 20px;
         }
         
         .header {
@@ -58,23 +60,25 @@
             margin-bottom: 5px;
         }
         
+        /* Perfectly positioned scanner section */
         .scanner-section {
             position: fixed;
-            top: -100vh;
+            top: 0;
             left: 0;
             width: 100%;
-            height: auto;
-            overflow: hidden;
-            background-color: #000;
+            height: 100vh;
+            background: black;
             z-index: 1000;
-            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transform: translateY(-100%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
         
         .scanner-section.active {
-            top: 0;
+            transform: translateY(0);
         }
         
         .scanner-container {
@@ -225,16 +229,6 @@
             box-shadow: none;
         }
         
-        .btn.secondary {
-            background: #e0e0e0;
-            color: #37474f;
-            border: 1px solid #bdbdbd;
-        }
-        
-        .btn.secondary:hover {
-            background: #d5d5d5;
-        }
-        
         .btn.success {
             background: #00c853;
         }
@@ -314,7 +308,33 @@
             
             .scanner-container {
                 max-width: 100%;
-            }
+            padding: 0 10px;
+            box-sizing: border-box;
+            aspect-ratio: 1/1;
+            max-height: 80vh;
+            max-width: 100vw;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            height: auto;
+            width: 100%;
+            padding-top: 100%;
+            height: 0;
+            position: relative;
+            margin: 0 auto;
+            max-width: 500px;
+        }
+        
+        .scanner-container > * {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
             
             .btn {
                 padding: 12px 20px;
@@ -368,13 +388,38 @@
             font-weight: 500;
             opacity: 0.9;
         }
+        
+        .close-scanner {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .close-scanner:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Floating QR Scanner</h1>
-            <p class="subtitle">Native-style floating action button</p>
+            <h1>Perfect QR Scanner</h1>
+            <p class="subtitle">Flawless positioning with native-style FAB</p>
         </div>
         
         <div class="library-info">
@@ -382,6 +427,9 @@
         </div>
         
         <div class="scanner-section" id="scanner-section">
+            <div class="close-scanner" id="close-scanner">
+                <i class="fas fa-times"></i>
+            </div>
             <div class="scanner-container">
                 <video id="video" playsinline autoplay></video>
                 <canvas id="canvas"></canvas>
@@ -404,8 +452,8 @@
             <h3>How to Use</h3>
             <ul>
                 <li>Tap the floating camera button to start scanning</li>
-                <li>Point your camera at a QR code</li>
-                <li>The scanner will automatically detect QR codes</li>
+                <li>Point your camera at a QR code - scanner will detect automatically</li>
+                <li>The scanner fills the entire screen for optimal scanning</li>
                 <li>When scanning, the button pulses red for visual feedback</li>
                 <li>Works on all modern browsers including Firefox</li>
             </ul>
@@ -426,6 +474,7 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const fab = document.getElementById('fab');
+        const closeScanner = document.getElementById('close-scanner');
         const scanAgainBtn = document.getElementById('scan-again-btn');
         const resultContent = document.getElementById('result-content');
         const scannerSection = document.getElementById('scanner-section');
@@ -578,6 +627,8 @@
                 startScanner();
             }
         });
+        
+        closeScanner.addEventListener('click', stopScanner);
         
         scanAgainBtn.addEventListener('click', resetScanner);
         
