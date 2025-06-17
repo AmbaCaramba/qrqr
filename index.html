@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfectly Positioned QR Scanner</title>
+    <title>Floating Action QR Scanner</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -59,7 +60,7 @@
         
         .scanner-section {
             position: fixed;
-            top: -100vh; /* Start above the viewport */
+            top: -100vh;
             left: 0;
             width: 100%;
             height: auto;
@@ -73,7 +74,7 @@
         }
         
         .scanner-section.active {
-            top: 0; /* Land perfectly at the top */
+            top: 0;
         }
         
         .scanner-container {
@@ -129,6 +130,60 @@
                 border-color: #00e676;
                 box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 230, 118, 0.5);
             }
+        }
+        
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2000;
+        }
+        
+        .fab {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #2962ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(41, 98, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .fab:hover {
+            background: #0039cb;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(41, 98, 255, 0.7);
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        .fab i {
+            font-size: 30px;
+            transition: transform 0.3s ease;
+        }
+        
+        .fab.scanning i {
+            transform: rotate(135deg);
+        }
+        
+        .fab.scanning {
+            background: #ff1744;
+            animation: pulseFab 1.5s infinite;
+        }
+        
+        @keyframes pulseFab {
+            0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 23, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); }
         }
         
         .controls {
@@ -224,24 +279,6 @@
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
-        .status {
-            text-align: center;
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 1.1rem;
-            color: #37474f;
-            font-weight: 500;
-            min-height: 30px;
-        }
-        
-        .status.success {
-            color: #00c853;
-        }
-        
-        .status.error {
-            color: #ff1744;
-        }
-        
         .instructions {
             background: #f5f5f5;
             border-radius: 12px;
@@ -289,6 +326,17 @@
                 font-size: 1.1rem;
                 padding: 15px;
             }
+            
+            .fab {
+                width: 60px;
+                height: 60px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .fab i {
+                font-size: 25px;
+            }
         }
         
         .result-placeholder {
@@ -308,13 +356,25 @@
             font-size: 0.9rem;
             text-align: center;
         }
+        
+        .fab-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 500;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Perfect QR Scanner</h1>
-            <p class="subtitle">Flawless positioning with smooth animation</p>
+            <h1>Floating QR Scanner</h1>
+            <p class="subtitle">Native-style floating action button</p>
         </div>
         
         <div class="library-info">
@@ -337,20 +397,26 @@
         </div>
         
         <div class="controls">
-            <button id="start-btn" class="btn">Start Scanner</button>
-            <button id="stop-btn" class="btn secondary">Stop Scanner</button>
             <button id="scan-again-btn" class="btn success">Scan Another Code</button>
         </div>
         
         <div class="instructions">
             <h3>How to Use</h3>
             <ul>
-                <li>Click "Start Scanner" to slide down the QR scanner</li>
+                <li>Tap the floating camera button to start scanning</li>
                 <li>Point your camera at a QR code</li>
                 <li>The scanner will automatically detect QR codes</li>
-                <li>Scanner stops after detection and buttons update automatically</li>
+                <li>When scanning, the button pulses red for visual feedback</li>
                 <li>Works on all modern browsers including Firefox</li>
             </ul>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <div class="fab" id="fab">
+            <i class="fas fa-camera"></i>
+            <div class="fab-label">Scan QR</div>
         </div>
     </div>
 
@@ -359,8 +425,7 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('start-btn');
-        const stopBtn = document.getElementById('stop-btn');
+        const fab = document.getElementById('fab');
         const scanAgainBtn = document.getElementById('scan-again-btn');
         const resultContent = document.getElementById('result-content');
         const scannerSection = document.getElementById('scanner-section');
@@ -373,8 +438,6 @@
         
         // Initialize button states
         function initButtonStates() {
-            startBtn.style.display = 'inline-block';
-            stopBtn.style.display = 'none';
             scanAgainBtn.style.display = 'none';
         }
         
@@ -383,10 +446,8 @@
             // Show scanner with slide-down animation
             scannerSection.classList.add('active');
             
-            // Update button states
-            startBtn.style.display = 'none';
-            stopBtn.style.display = 'inline-block';
-            scanAgainBtn.style.display = 'none';
+            // Update FAB state
+            fab.classList.add('scanning');
             
             // If we already have permission and stream, reuse it
             if (hasPermission && stream) {
@@ -412,8 +473,8 @@
                 resultContent.style.color = '#ff1744';
                 scannerSection.classList.remove('active');
                 
-                // Reset button states on error
-                initButtonStates();
+                // Reset FAB state on error
+                fab.classList.remove('scanning');
             }
         }
         
@@ -472,9 +533,7 @@
             // Stop scanning after successful detection
             stopScanner();
             
-            // Update button states
-            startBtn.style.display = 'none';
-            stopBtn.style.display = 'none';
+            // Show the Scan Again button
             scanAgainBtn.style.display = 'inline-block';
         }
         
@@ -485,6 +544,9 @@
             
             // Hide scanner with slide-up animation
             scannerSection.classList.remove('active');
+            
+            // Reset FAB state
+            fab.classList.remove('scanning');
         }
         
         // Function to reset and scan again
@@ -494,6 +556,8 @@
             resultContent.style.backgroundColor = 'white';
             resultContent.style.borderColor = '#90caf9';
             resultContent.classList.add('result-placeholder');
+            
+            scanAgainBtn.style.display = 'none';
             
             startScanner();
         }
@@ -507,14 +571,12 @@
         });
         
         // Event listeners
-        startBtn.addEventListener('click', startScanner);
-        
-        stopBtn.addEventListener('click', () => {
-            stopScanner();
-            // Update button states after manual stop
-            startBtn.style.display = 'inline-block';
-            stopBtn.style.display = 'none';
-            scanAgainBtn.style.display = 'none';
+        fab.addEventListener('click', () => {
+            if (scannerActive) {
+                stopScanner();
+            } else {
+                startScanner();
+            }
         });
         
         scanAgainBtn.addEventListener('click', resetScanner);
