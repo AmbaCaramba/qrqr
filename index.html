@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional QR & Text Scanner</title>
+    <title>Professional QR & Cyrillic Scanner</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +16,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #0c0c14, #14141f);
+            background: linear-gradient(135deg, #0a0a12, #12121c);
             color: #e0e0e0;
             min-height: 100vh;
             padding: 20px;
@@ -29,26 +29,26 @@
         .container {
             width: 100%;
             max-width: 500px;
-            background: rgba(20, 20, 28, 0.95);
+            background: rgba(20, 20, 30, 0.95);
             border-radius: 16px;
             padding: 30px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(70, 130, 180, 0.2);
+            border: 1px solid rgba(80, 150, 200, 0.2);
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(70, 130, 180, 0.3);
+            border-bottom: 1px solid rgba(80, 150, 200, 0.3);
         }
         
         h1 {
             font-size: 2.4rem;
             margin-bottom: 8px;
-            background: linear-gradient(90deg, #4682b4, #5f9ea0);
+            background: linear-gradient(90deg, #5096c8, #60a0c0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 600;
@@ -57,7 +57,7 @@
         
         .subtitle {
             font-size: 1.1rem;
-            color: #5f9ea0;
+            color: #60a0c0;
             margin-bottom: 5px;
             opacity: 0.9;
         }
@@ -113,7 +113,7 @@
         .scanner-frame {
             width: 70%;
             height: 70%;
-            border: 2px solid #4682b4;
+            border: 2px solid #5096c8;
             border-radius: 8px;
             box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7);
             position: relative;
@@ -127,7 +127,7 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: linear-gradient(90deg, transparent, #4682b4, transparent);
+            background: linear-gradient(90deg, transparent, #5096c8, transparent);
             animation: scanLine 2s linear infinite;
         }
         
@@ -143,7 +143,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: 2px solid rgba(70, 130, 180, 0.3);
+            border: 2px solid rgba(80, 150, 200, 0.3);
             border-radius: 8px;
             box-sizing: border-box;
         }
@@ -158,7 +158,7 @@
             position: absolute;
             width: 25px;
             height: 25px;
-            border: 3px solid #4682b4;
+            border: 3px solid #5096c8;
         }
         
         .corner-tl {
@@ -193,15 +193,21 @@
             border-bottom-right-radius: 8px;
         }
         
-        /* Mode Toggle */
+        /* Mode and Language Selection */
+        .scanner-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
         .mode-toggle {
             display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            background: rgba(30, 30, 40, 0.7);
+            background: rgba(30, 30, 45, 0.7);
             border-radius: 50px;
             padding: 8px;
-            border: 1px solid rgba(70, 130, 180, 0.2);
+            border: 1px solid rgba(80, 150, 200, 0.2);
         }
         
         .mode-btn {
@@ -220,18 +226,44 @@
         }
         
         .mode-btn.active {
-            background: rgba(70, 130, 180, 0.2);
-            color: #64d8ff;
-            box-shadow: 0 0 10px rgba(70, 130, 180, 0.2);
+            background: rgba(80, 150, 200, 0.2);
+            color: #70c0e0;
+            box-shadow: 0 0 10px rgba(80, 150, 200, 0.2);
+        }
+        
+        .language-selector {
+            background: rgba(30, 30, 45, 0.7);
+            border-radius: 50px;
+            padding: 10px 20px;
+            border: 1px solid rgba(80, 150, 200, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-selector label {
+            font-size: 0.9rem;
+            color: #70c0e0;
+        }
+        
+        .language-selector select {
+            background: rgba(40, 40, 60, 0.8);
+            color: #e0e0e0;
+            border: 1px solid rgba(80, 150, 200, 0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
         }
         
         /* Results Section */
         .results {
-            background: rgba(25, 25, 35, 0.8);
+            background: rgba(25, 25, 40, 0.8);
             border-radius: 12px;
             padding: 25px;
             margin: 30px 0;
-            border: 1px solid rgba(70, 130, 180, 0.2);
+            border: 1px solid rgba(80, 150, 200, 0.2);
             text-align: center;
             transition: all 0.3s ease;
             min-height: 200px;
@@ -243,7 +275,7 @@
         .results h2 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            color: #5f9ea0;
+            color: #60a0c0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -255,15 +287,15 @@
             line-height: 1.6;
             min-height: 100px;
             padding: 20px;
-            background: rgba(30, 30, 40, 0.9);
+            background: rgba(30, 30, 45, 0.9);
             border-radius: 8px;
             word-break: break-all;
-            border: 1px solid rgba(70, 130, 180, 0.2);
+            border: 1px solid rgba(80, 150, 200, 0.2);
             margin-bottom: 10px;
             white-space: pre-wrap;
             font-weight: 500;
             color: #e0e0e0;
-            font-family: 'Courier New', monospace;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             text-align: left;
             max-height: 300px;
             overflow-y: auto;
@@ -284,19 +316,19 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            background: linear-gradient(135deg, #4682b4, #5f9ea0);
+            background: linear-gradient(135deg, #5096c8, #60a0c0);
             color: #fff;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 15px rgba(70, 130, 180, 0.3);
+            box-shadow: 0 6px 15px rgba(80, 150, 200, 0.3);
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
         .btn:hover {
-            background: linear-gradient(135deg, #3a6a8f, #4e7e80);
+            background: linear-gradient(135deg, #3a7aac, #4e8ca0);
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(70, 130, 180, 0.5);
+            box-shadow: 0 8px 20px rgba(80, 150, 200, 0.5);
         }
         
         .btn:active {
@@ -308,10 +340,6 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
-        }
-        
-        .btn-text {
-            background: linear-gradient(135deg, #5f9ea0, #4682b4);
         }
         
         /* Floating Action Button */
@@ -330,12 +358,12 @@
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4682b4, #5f9ea0);
+            background: linear-gradient(135deg, #5096c8, #60a0c0);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 20px rgba(70, 130, 180, 0.4);
+            box-shadow: 0 6px 20px rgba(80, 150, 200, 0.4);
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -344,7 +372,7 @@
         
         .fab:hover {
             transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(70, 130, 180, 0.6);
+            box-shadow: 0 8px 25px rgba(80, 150, 200, 0.6);
         }
         
         .fab:active {
@@ -361,21 +389,21 @@
         }
         
         .fab.scanning {
-            background: linear-gradient(135deg, #4682b4, #4682b4);
+            background: linear-gradient(135deg, #5096c8, #5096c8);
             animation: pulseFab 1.5s infinite;
         }
         
         @keyframes pulseFab {
             0% { 
-                box-shadow: 0 0 0 0 rgba(70, 130, 180, 0.6); 
+                box-shadow: 0 0 0 0 rgba(80, 150, 200, 0.6); 
                 transform: scale(1);
             }
             50% { 
-                box-shadow: 0 0 0 15px rgba(70, 130, 180, 0); 
+                box-shadow: 0 0 0 15px rgba(80, 150, 200, 0); 
                 transform: scale(1.05);
             }
             100% { 
-                box-shadow: 0 0 0 0 rgba(70, 130, 180, 0); 
+                box-shadow: 0 0 0 0 rgba(80, 150, 200, 0); 
                 transform: scale(1);
             }
         }
@@ -387,24 +415,24 @@
             width: 100%;
             text-align: center;
             font-size: 0.8rem;
-            color: #5f9ea0;
+            color: #60a0c0;
             font-weight: 500;
             opacity: 0.9;
         }
         
         /* Instructions */
         .instructions {
-            background: rgba(25, 25, 35, 0.8);
+            background: rgba(25, 25, 40, 0.8);
             border-radius: 12px;
             padding: 25px;
             margin-top: 30px;
-            border: 1px solid rgba(70, 130, 180, 0.2);
+            border: 1px solid rgba(80, 150, 200, 0.2);
         }
         
         .instructions h3 {
             font-size: 1.4rem;
             margin-bottom: 20px;
-            color: #5f9ea0;
+            color: #60a0c0;
             text-align: center;
             display: flex;
             align-items: center;
@@ -426,7 +454,7 @@
         }
         
         .instructions li i {
-            color: #4682b4;
+            color: #5096c8;
             margin-right: 12px;
             font-size: 1.1rem;
             min-width: 24px;
@@ -466,6 +494,11 @@
             .fab i {
                 font-size: 22px;
             }
+            
+            .scanner-controls {
+                flex-direction: column;
+                align-items: center;
+            }
         }
         
         .result-placeholder {
@@ -479,13 +512,13 @@
             text-align: center;
             padding: 15px;
             font-size: 1rem;
-            color: #5f9ea0;
+            color: #60a0c0;
             font-weight: 500;
         }
         
         .progress-bar {
             height: 5px;
-            background: rgba(70, 130, 180, 0.3);
+            background: rgba(80, 150, 200, 0.3);
             border-radius: 3px;
             margin-top: 10px;
             overflow: hidden;
@@ -493,17 +526,31 @@
         
         .progress {
             height: 100%;
-            background: linear-gradient(90deg, #4682b4, #5f9ea0);
+            background: linear-gradient(90deg, #5096c8, #60a0c0);
             width: 0%;
             transition: width 0.3s ease;
         }
         
-        .ocr-processing {
+        .cyrillic-sample {
+            background: rgba(40, 40, 60, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(80, 150, 200, 0.2);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #70c0e0;
+        }
+        
+        .language-info {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 15px;
-            padding: 20px;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #70c0e0;
         }
     </style>
 </head>
@@ -511,16 +558,28 @@
     <div class="container">
         <div class="header">
             <h1>Professional Scanner</h1>
-            <p class="subtitle">QR Codes & Text Recognition</p>
+            <p class="subtitle">QR Codes & Cyrillic Text Recognition</p>
         </div>
         
-        <div class="mode-toggle">
-            <button id="qr-mode-btn" class="mode-btn active">
-                <i class="fas fa-qrcode"></i> QR Mode
-            </button>
-            <button id="text-mode-btn" class="mode-btn">
-                <i class="fas fa-font"></i> Text Mode
-            </button>
+        <div class="scanner-controls">
+            <div class="mode-toggle">
+                <button id="qr-mode-btn" class="mode-btn active">
+                    <i class="fas fa-qrcode"></i> QR Mode
+                </button>
+                <button id="text-mode-btn" class="mode-btn">
+                    <i class="fas fa-font"></i> Text Mode
+                </button>
+            </div>
+            
+            <div class="language-selector">
+                <label for="language-select"><i class="fas fa-language"></i> Language:</label>
+                <select id="language-select">
+                    <option value="eng">English</option>
+                    <option value="rus">Russian (Cyrillic)</option>
+                    <option value="bul">Bulgarian (Cyrillic)</option>
+                    <option value="ukr">Ukrainian (Cyrillic)</option>
+                </select>
+            </div>
         </div>
         
         <div class="scanner-section" id="scanner-section">
@@ -547,6 +606,10 @@
             <div class="progress-bar" id="progress-bar">
                 <div class="progress" id="progress"></div>
             </div>
+            
+            <div class="cyrillic-sample" id="cyrillic-sample">
+                Пример текста на кириллице: Привет, мир!
+            </div>
         </div>
         
         <div class="controls">
@@ -562,8 +625,8 @@
                 <li><i class="fas fa-hand-pointer"></i> Tap the floating button to start scanning</li>
                 <li><i class="fas fa-camera"></i> Position content within the center frame</li>
                 <li><i class="fas fa-qrcode"></i> Toggle between QR and Text recognition modes</li>
-                <li><i class="fas fa-font"></i> Text recognition powered by Tesseract.js</li>
-                <li><i class="fas fa-mobile-alt"></i> Works on all modern browsers</li>
+                <li><i class="fas fa-language"></i> Select language for text recognition</li>
+                <li><i class="fas fa-font"></i> Cyrillic languages supported: Russian, Bulgarian, Ukrainian</li>
             </ul>
         </div>
     </div>
@@ -590,6 +653,8 @@
         const qrModeBtn = document.getElementById('qr-mode-btn');
         const textModeBtn = document.getElementById('text-mode-btn');
         const resultsTitle = document.getElementById('results-title');
+        const languageSelect = document.getElementById('language-select');
+        const cyrillicSample = document.getElementById('cyrillic-sample');
         
         // Scanner state
         let scannerActive = false;
@@ -597,11 +662,13 @@
         let stream = null;
         let hasPermission = false;
         let scanMode = 'qr'; // 'qr' or 'text'
+        let selectedLanguage = 'eng';
         
         // Initialize button states
         function initButtonStates() {
             scanAgainBtn.style.display = 'none';
             progressBar.style.width = '0%';
+            cyrillicSample.style.display = 'none';
         }
         
         // Set scan mode
@@ -612,8 +679,25 @@
             
             if (mode === 'qr') {
                 resultsTitle.innerHTML = '<i class="fas fa-qrcode"></i> QR Scan Results';
+                cyrillicSample.style.display = 'none';
             } else {
                 resultsTitle.innerHTML = '<i class="fas fa-font"></i> Text Recognition';
+                cyrillicSample.style.display = 'block';
+            }
+        }
+        
+        // Update Cyrillic sample based on selected language
+        function updateCyrillicSample() {
+            const samples = {
+                'rus': 'Пример текста на русском: Привет, мир!',
+                'bul': 'Примерен текст на български: Здравей, свят!',
+                'ukr': 'Приклад тексту українською: Привіт, світ!'
+            };
+            
+            if (['rus', 'bul', 'ukr'].includes(selectedLanguage)) {
+                cyrillicSample.textContent = samples[selectedLanguage];
+            } else {
+                cyrillicSample.textContent = 'Cyrillic text sample: Привет, мир!';
             }
         }
         
@@ -739,10 +823,10 @@
                 statusEl.textContent = "Processing text...";
                 progressBar.style.width = '30%';
                 
-                // Use Tesseract.js for text recognition
+                // Use Tesseract.js for text recognition with selected language
                 const { data: { text } } = await Tesseract.recognize(
                     ocrCanvas,
-                    'eng',
+                    selectedLanguage,
                     { 
                         logger: progress => {
                             if (progress.status === 'recognizing text') {
@@ -833,9 +917,15 @@
         qrModeBtn.addEventListener('click', () => setScanMode('qr'));
         textModeBtn.addEventListener('click', () => setScanMode('text'));
         
+        languageSelect.addEventListener('change', (e) => {
+            selectedLanguage = e.target.value;
+            updateCyrillicSample();
+        });
+        
         // Initialize on load
         initButtonStates();
         setScanMode('qr');
+        updateCyrillicSample();
     </script>
 </body>
 </html>
