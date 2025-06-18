@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional QR Scanner</title>
+    <title>Professional QR & Text Scanner</title>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -15,7 +16,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #0a0a0f, #121218);
+            background: linear-gradient(135deg, #0c0c14, #14141f);
             color: #e0e0e0;
             min-height: 100vh;
             padding: 20px;
@@ -28,36 +29,37 @@
         .container {
             width: 100%;
             max-width: 500px;
-            background: rgba(20, 20, 25, 0.9);
+            background: rgba(20, 20, 28, 0.95);
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(70, 130, 180, 0.2);
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(70, 130, 180, 0.3);
         }
         
         h1 {
             font-size: 2.4rem;
             margin-bottom: 8px;
-            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            background: linear-gradient(90deg, #4682b4, #5f9ea0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 600;
+            letter-spacing: -0.5px;
         }
         
         .subtitle {
             font-size: 1.1rem;
-            color: #8f94fb;
+            color: #5f9ea0;
             margin-bottom: 5px;
-            opacity: 0.8;
+            opacity: 0.9;
         }
         
         /* Scanner Section */
@@ -68,7 +70,7 @@
             width: 100%;
             height: auto;
             overflow: hidden;
-            background-color: #0c0c12;
+            background-color: #0c0c14;
             z-index: 1000;
             transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
@@ -111,7 +113,7 @@
         .scanner-frame {
             width: 70%;
             height: 70%;
-            border: 2px solid #4e54c8;
+            border: 2px solid #4682b4;
             border-radius: 8px;
             box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.7);
             position: relative;
@@ -125,7 +127,7 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: linear-gradient(90deg, transparent, #4e54c8, transparent);
+            background: linear-gradient(90deg, transparent, #4682b4, transparent);
             animation: scanLine 2s linear infinite;
         }
         
@@ -141,7 +143,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: 2px solid rgba(78, 84, 200, 0.3);
+            border: 2px solid rgba(70, 130, 180, 0.3);
             border-radius: 8px;
             box-sizing: border-box;
         }
@@ -156,7 +158,7 @@
             position: absolute;
             width: 25px;
             height: 25px;
-            border: 3px solid #4e54c8;
+            border: 3px solid #4682b4;
         }
         
         .corner-tl {
@@ -191,86 +193,45 @@
             border-bottom-right-radius: 8px;
         }
         
-        /* Floating Action Button */
-        .fab-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 2000;
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: rgba(30, 30, 40, 0.7);
+            border-radius: 50px;
+            padding: 8px;
+            border: 1px solid rgba(70, 130, 180, 0.2);
         }
         
-        .fab {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb);
-            color: #fff;
+        .mode-btn {
+            padding: 10px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: transparent;
+            color: #8a9a9b;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 20px rgba(78, 84, 200, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            gap: 8px;
         }
         
-        .fab:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(78, 84, 200, 0.6);
+        .mode-btn.active {
+            background: rgba(70, 130, 180, 0.2);
+            color: #64d8ff;
+            box-shadow: 0 0 10px rgba(70, 130, 180, 0.2);
         }
         
-        .fab:active {
-            transform: scale(0.95);
-        }
-        
-        .fab i {
-            font-size: 30px;
-            transition: transform 0.3s ease;
-        }
-        
-        .fab.scanning i {
-            transform: rotate(135deg);
-        }
-        
-        .fab.scanning {
-            background: linear-gradient(135deg, #4e54c8, #4e54c8);
-            animation: pulseFab 1.5s infinite;
-        }
-        
-        @keyframes pulseFab {
-            0% { 
-                box-shadow: 0 0 0 0 rgba(78, 84, 200, 0.6); 
-                transform: scale(1);
-            }
-            50% { 
-                box-shadow: 0 0 0 15px rgba(78, 84, 200, 0); 
-                transform: scale(1.05);
-            }
-            100% { 
-                box-shadow: 0 0 0 0 rgba(78, 84, 200, 0); 
-                transform: scale(1);
-            }
-        }
-        
-        .fab-label {
-            position: absolute;
-            bottom: -25px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #8f94fb;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-        
+        /* Results Section */
         .results {
-            background: rgba(25, 25, 35, 0.7);
+            background: rgba(25, 25, 35, 0.8);
             border-radius: 12px;
             padding: 25px;
             margin: 30px 0;
-            border: 1px solid rgba(78, 84, 200, 0.2);
+            border: 1px solid rgba(70, 130, 180, 0.2);
             text-align: center;
             transition: all 0.3s ease;
             min-height: 200px;
@@ -282,7 +243,7 @@
         .results h2 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            color: #8f94fb;
+            color: #5f9ea0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -290,66 +251,165 @@
         }
         
         #result-content {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.6;
             min-height: 100px;
             padding: 20px;
-            background: rgba(30, 30, 40, 0.8);
+            background: rgba(30, 30, 40, 0.9);
             border-radius: 8px;
             word-break: break-all;
-            border: 1px solid rgba(78, 84, 200, 0.2);
+            border: 1px solid rgba(70, 130, 180, 0.2);
             margin-bottom: 10px;
             white-space: pre-wrap;
             font-weight: 500;
-            color: #64d8ff;
+            color: #e0e0e0;
             font-family: 'Courier New', monospace;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
         }
         
+        /* Controls */
         .controls {
             display: flex;
             justify-content: center;
+            gap: 15px;
             margin: 25px 0;
         }
         
         .btn {
-            padding: 15px 30px;
+            padding: 14px 28px;
             font-size: 1.1rem;
             font-weight: 600;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            background: linear-gradient(135deg, #4682b4, #5f9ea0);
             color: #fff;
             transition: all 0.3s ease;
-            box-shadow: 0 6px 15px rgba(78, 84, 200, 0.4);
+            box-shadow: 0 6px 15px rgba(70, 130, 180, 0.3);
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
         .btn:hover {
-            background: linear-gradient(135deg, #4348b0, #7a7fd8);
+            background: linear-gradient(135deg, #3a6a8f, #4e7e80);
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(78, 84, 200, 0.6);
+            box-shadow: 0 8px 20px rgba(70, 130, 180, 0.5);
         }
         
         .btn:active {
             transform: translateY(0);
         }
         
+        .btn:disabled {
+            background: #505a6e;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-text {
+            background: linear-gradient(135deg, #5f9ea0, #4682b4);
+        }
+        
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .fab {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4682b4, #5f9ea0);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(70, 130, 180, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .fab:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(70, 130, 180, 0.6);
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        .fab i {
+            font-size: 26px;
+            transition: transform 0.3s ease;
+        }
+        
+        .fab.scanning i {
+            transform: rotate(135deg);
+        }
+        
+        .fab.scanning {
+            background: linear-gradient(135deg, #4682b4, #4682b4);
+            animation: pulseFab 1.5s infinite;
+        }
+        
+        @keyframes pulseFab {
+            0% { 
+                box-shadow: 0 0 0 0 rgba(70, 130, 180, 0.6); 
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 0 15px rgba(70, 130, 180, 0); 
+                transform: scale(1.05);
+            }
+            100% { 
+                box-shadow: 0 0 0 0 rgba(70, 130, 180, 0); 
+                transform: scale(1);
+            }
+        }
+        
+        .fab-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #5f9ea0;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        /* Instructions */
         .instructions {
-            background: rgba(25, 25, 35, 0.7);
+            background: rgba(25, 25, 35, 0.8);
             border-radius: 12px;
             padding: 25px;
             margin-top: 30px;
-            border: 1px solid rgba(78, 84, 200, 0.2);
+            border: 1px solid rgba(70, 130, 180, 0.2);
         }
         
         .instructions h3 {
             font-size: 1.4rem;
             margin-bottom: 20px;
-            color: #8f94fb;
+            color: #5f9ea0;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .instructions ul {
@@ -366,7 +426,7 @@
         }
         
         .instructions li i {
-            color: #4e54c8;
+            color: #4682b4;
             margin-right: 12px;
             font-size: 1.1rem;
             min-width: 24px;
@@ -392,37 +452,26 @@
             }
             
             .btn {
-                padding: 14px 25px;
+                padding: 12px 20px;
                 font-size: 1rem;
             }
             
             .fab {
-                width: 65px;
-                height: 65px;
-                bottom: 25px;
-                right: 25px;
+                width: 60px;
+                height: 60px;
+                bottom: 20px;
+                right: 20px;
             }
             
             .fab i {
-                font-size: 28px;
+                font-size: 22px;
             }
         }
         
         .result-placeholder {
             font-size: 1.1rem;
-            color: #aaa;
+            color: #8a9a9b;
             padding: 30px;
-            text-align: center;
-        }
-        
-        .library-info {
-            background: rgba(30, 30, 40, 0.8);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-            border: 1px solid rgba(78, 84, 200, 0.2);
-            color: #8f94fb;
-            font-size: 0.9rem;
             text-align: center;
         }
         
@@ -430,20 +479,48 @@
             text-align: center;
             padding: 15px;
             font-size: 1rem;
-            color: #8f94fb;
+            color: #5f9ea0;
             font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 5px;
+            background: rgba(70, 130, 180, 0.3);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4682b4, #5f9ea0);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .ocr-processing {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Professional QR Scanner</h1>
-            <p class="subtitle">Secure scanning with focused detection area</p>
+            <h1>Professional Scanner</h1>
+            <p class="subtitle">QR Codes & Text Recognition</p>
         </div>
         
-        <div class="library-info">
-            <i class="fas fa-shield-alt"></i> Scans only the center area for enhanced privacy
+        <div class="mode-toggle">
+            <button id="qr-mode-btn" class="mode-btn active">
+                <i class="fas fa-qrcode"></i> QR Mode
+            </button>
+            <button id="text-mode-btn" class="mode-btn">
+                <i class="fas fa-font"></i> Text Mode
+            </button>
         </div>
         
         <div class="scanner-section" id="scanner-section">
@@ -464,15 +541,18 @@
         </div>
         
         <div class="results">
-            <h2><i class="fas fa-qrcode"></i> Scan Results</h2>
-            <div id="result-content" class="result-placeholder">No QR code scanned yet</div>
+            <h2 id="results-title"><i class="fas fa-qrcode"></i> Scan Results</h2>
+            <div id="result-content" class="result-placeholder">No data scanned yet</div>
             <div class="status" id="status">Ready to scan</div>
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
         </div>
         
         <div class="controls">
             <button id="scan-again-btn" class="btn">
                 <i class="fas fa-redo"></i>
-                Scan Another Code
+                Scan Again
             </button>
         </div>
         
@@ -480,9 +560,9 @@
             <h3><i class="fas fa-info-circle"></i> How to Use</h3>
             <ul>
                 <li><i class="fas fa-hand-pointer"></i> Tap the floating button to start scanning</li>
-                <li><i class="fas fa-camera"></i> Position QR code within the center frame</li>
-                <li><i class="fas fa-lock"></i> Only the center area is scanned for privacy</li>
-                <li><i class="fas fa-check-circle"></i> Scanner automatically detects QR codes</li>
+                <li><i class="fas fa-camera"></i> Position content within the center frame</li>
+                <li><i class="fas fa-qrcode"></i> Toggle between QR and Text recognition modes</li>
+                <li><i class="fas fa-font"></i> Text recognition powered by Tesseract.js</li>
                 <li><i class="fas fa-mobile-alt"></i> Works on all modern browsers</li>
             </ul>
         </div>
@@ -505,17 +585,36 @@
         const scanAgainBtn = document.getElementById('scan-again-btn');
         const resultContent = document.getElementById('result-content');
         const statusEl = document.getElementById('status');
+        const progressBar = document.getElementById('progress');
         const scannerSection = document.getElementById('scanner-section');
+        const qrModeBtn = document.getElementById('qr-mode-btn');
+        const textModeBtn = document.getElementById('text-mode-btn');
+        const resultsTitle = document.getElementById('results-title');
         
         // Scanner state
         let scannerActive = false;
         let detectionInterval;
         let stream = null;
         let hasPermission = false;
+        let scanMode = 'qr'; // 'qr' or 'text'
         
         // Initialize button states
         function initButtonStates() {
             scanAgainBtn.style.display = 'none';
+            progressBar.style.width = '0%';
+        }
+        
+        // Set scan mode
+        function setScanMode(mode) {
+            scanMode = mode;
+            qrModeBtn.classList.toggle('active', mode === 'qr');
+            textModeBtn.classList.toggle('active', mode === 'text');
+            
+            if (mode === 'qr') {
+                resultsTitle.innerHTML = '<i class="fas fa-qrcode"></i> QR Scan Results';
+            } else {
+                resultsTitle.innerHTML = '<i class="fas fa-font"></i> Text Recognition';
+            }
         }
         
         // Function to start the camera and scanner
@@ -567,14 +666,19 @@
             video.addEventListener('loadedmetadata', () => {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                statusEl.textContent = "Scanning... Position QR code in frame";
+                statusEl.textContent = "Scanning... Position content in frame";
             });
             
             scannerActive = true;
             
             // Start detection loop
             clearInterval(detectionInterval);
-            detectionInterval = setInterval(detectQRCode, 300);
+            
+            if (scanMode === 'qr') {
+                detectionInterval = setInterval(detectQRCode, 300);
+            } else {
+                detectionInterval = setInterval(detectText, 1000);
+            }
         }
         
         // Function to detect QR codes using jsQR in center area only
@@ -603,26 +707,83 @@
                     handleDetection(code.data);
                 }
             } catch (error) {
-                console.error('Detection error:', error);
+                console.error('QR Detection error:', error);
                 resultContent.textContent = 'Detection error: ' + error.message;
                 resultContent.style.color = '#ff6b6b';
                 statusEl.textContent = "Detection error";
             }
         }
         
-        // Handle detected QR code
-        function handleDetection(qrValue) {
+        // Function to detect text using Tesseract.js in center area
+        async function detectText() {
+            if (!scannerActive || !video.videoWidth) return;
+            
+            try {
+                // Draw video frame to canvas
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Define the center scanning area (70% of the smaller dimension)
+                const minDimension = Math.min(canvas.width, canvas.height);
+                const scanSize = minDimension * 0.7;
+                const x = (canvas.width - scanSize) / 2;
+                const y = (canvas.height - scanSize) / 2;
+                
+                // Create a temporary canvas for OCR processing
+                const ocrCanvas = document.createElement('canvas');
+                ocrCanvas.width = scanSize;
+                ocrCanvas.height = scanSize;
+                const ocrCtx = ocrCanvas.getContext('2d');
+                ocrCtx.drawImage(canvas, x, y, scanSize, scanSize, 0, 0, scanSize, scanSize);
+                
+                // Show progress
+                statusEl.textContent = "Processing text...";
+                progressBar.style.width = '30%';
+                
+                // Use Tesseract.js for text recognition
+                const { data: { text } } = await Tesseract.recognize(
+                    ocrCanvas,
+                    'eng',
+                    { 
+                        logger: progress => {
+                            if (progress.status === 'recognizing text') {
+                                progressBar.style.width = `${30 + Math.floor(progress.progress * 70)}%`;
+                            }
+                        }
+                    }
+                );
+                
+                if (text && text.trim().length > 0) {
+                    handleDetection(text);
+                } else {
+                    statusEl.textContent = "No text detected";
+                }
+            } catch (error) {
+                console.error('Text Recognition error:', error);
+                resultContent.textContent = 'Recognition error: ' + error.message;
+                resultContent.style.color = '#ff6b6b';
+                statusEl.textContent = "Recognition error";
+            }
+        }
+        
+        // Handle detected data
+        function handleDetection(data) {
             // Display result
-            resultContent.textContent = qrValue;
-            resultContent.style.color = '#64d8ff';
+            resultContent.textContent = data;
+            resultContent.style.color = '#e0e0e0';
             resultContent.classList.remove('result-placeholder');
-            statusEl.textContent = "QR code detected!";
+            
+            if (scanMode === 'qr') {
+                statusEl.textContent = "QR code detected!";
+            } else {
+                statusEl.textContent = "Text recognized!";
+            }
             
             // Stop scanning after successful detection
             stopScanner();
             
             // Show the Scan Again button
             scanAgainBtn.style.display = 'inline-block';
+            progressBar.style.width = '0%';
         }
         
         // Function to stop the scanner
@@ -639,10 +800,11 @@
         
         // Function to reset and scan again
         function resetScanner() {
-            resultContent.textContent = 'No QR code scanned yet';
-            resultContent.style.color = '#aaa';
+            resultContent.textContent = 'No data scanned yet';
+            resultContent.style.color = '#8a9a9b';
             resultContent.classList.add('result-placeholder');
             statusEl.textContent = "Ready to scan";
+            progressBar.style.width = '0%';
             
             scanAgainBtn.style.display = 'none';
             
@@ -668,9 +830,12 @@
         });
         
         scanAgainBtn.addEventListener('click', resetScanner);
+        qrModeBtn.addEventListener('click', () => setScanMode('qr'));
+        textModeBtn.addEventListener('click', () => setScanMode('text'));
         
-        // Initialize button states on load
+        // Initialize on load
         initButtonStates();
+        setScanMode('qr');
     </script>
 </body>
 </html>
